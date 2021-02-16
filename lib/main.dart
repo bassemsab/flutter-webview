@@ -17,21 +17,23 @@ class _WikipediaExplorerState extends State<WikipediaExplorer> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wikipedia Explorer'),
-        // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
-        actions: <Widget>[
-          NavigationControls(_controller.future),
-          Menu(_controller.future, () => _favorites),
-        ],
-      ),
-      body: WebView(
+      // appBar: AppBar(
+      //   title: const Text('Wikipedia Explorer'),
+      //   // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
+      //   actions: <Widget>[
+      //     NavigationControls(_controller.future),
+      //     Menu(_controller.future, () => _favorites),
+      //   ],
+      // ),
+      body: SafeArea(
+          child: WebView(
         initialUrl: 'https://sb.alacarte.my',
+        javascriptMode: JavascriptMode.unrestricted,
         onWebViewCreated: (WebViewController webViewController) {
           _controller.complete(webViewController);
         },
-      ),
-      floatingActionButton: _bookmarkButton(),
+      )),
+      // floatingActionButton: _bookmarkButton(),
     );
   }
 
@@ -60,7 +62,9 @@ class _WikipediaExplorerState extends State<WikipediaExplorer> {
 
 class Menu extends StatelessWidget {
   Menu(this._webViewControllerFuture, this.favoritesAccessor);
+
   final Future<WebViewController> _webViewControllerFuture;
+
   // TODO(efortuna): Come up with a more elegant solution for an accessor to this than a callback.
   final Function favoritesAccessor;
 
@@ -80,8 +84,8 @@ class Menu extends StatelessWidget {
             } else {
               var newUrl = await Navigator.push(context,
                   MaterialPageRoute(builder: (BuildContext context) {
-                    return FavoritesPage(favoritesAccessor());
-                  }));
+                return FavoritesPage(favoritesAccessor());
+              }));
               Scaffold.of(context).removeCurrentSnackBar();
               if (newUrl != null) controller.data.loadUrl(newUrl);
             }
@@ -104,16 +108,17 @@ class Menu extends StatelessWidget {
 
 class FavoritesPage extends StatelessWidget {
   FavoritesPage(this.favorites);
+
   final Set<String> favorites;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Favorite pages')),
+      // appBar: AppBar(title: Text('Favorite pages')),
       body: ListView(
           children: favorites
               .map((url) => ListTile(
-              title: Text(url), onTap: () => Navigator.pop(context, url)))
+                  title: Text(url), onTap: () => Navigator.pop(context, url)))
               .toList()),
     );
   }
@@ -157,7 +162,7 @@ class NavigationControls extends StatelessWidget {
   navigate(BuildContext context, WebViewController controller,
       {bool goBack: false}) async {
     bool canNavigate =
-    goBack ? await controller.canGoBack() : await controller.canGoForward();
+        goBack ? await controller.canGoBack() : await controller.canGoForward();
     if (canNavigate) {
       goBack ? controller.goBack() : controller.goForward();
     } else {
